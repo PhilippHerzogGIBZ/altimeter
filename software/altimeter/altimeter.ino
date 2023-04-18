@@ -3,6 +3,8 @@
 #include <ESPAsyncWebSrv.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
+#include <Wire.h>
+#include <MCP4725.h>
 
 // Definiert die analogen Eingänge
 int AINF_0 = A0;
@@ -43,6 +45,9 @@ const char* tb_server = "http://demo.thingsboard.io/api/v1/bG3gZepT5dmBFaoHJtNP/
 
 // Webserver Einstellungen
 AsyncWebServer server(80);
+
+// Digital Analog Wandler
+MCP4725 MCP(0x62);
 
 void setup() {
   // Initialisierung der seriellen Schnittstelle mit 115'222 baud
@@ -109,12 +114,20 @@ void setup() {
     String inputMessage;
     String inputParam;
     String PARAM_INPUT_1 = "actual_height";
+    String PARAM_INPUT_2 = "aout";
     // GET input1 value on <ESP_IP>/get?actual_height=<inputMessage>
     if (request->hasParam(PARAM_INPUT_1)) {
       inputMessage = request->getParam(PARAM_INPUT_1)->value();
       inputParam = PARAM_INPUT_1;
 
       pressure_calc_pressure_offset(inputMessage.toFloat());
+    }
+    // GET input1 value on <ESP_IP>/get?aout=<inputMessage>
+    else if (request->hasParam(PARAM_INPUT_2)) {
+      inputMessage = request->getParam(PARAM_INPUT_2)->value();
+      inputParam = PARAM_INPUT_2;
+
+      aout_setVoltage_mv(inputMessage.toInt());
     }
     else {
       inputMessage = "Keine Nachricht geschickt";
@@ -130,7 +143,9 @@ void setup() {
   server.onNotFound(notFound);
   server.begin();
 
-  Serial.println("HTTP server started");  
+  Serial.println("HTTP server started");
+
+  MCP.begin();
 }
 
 /*
@@ -150,10 +165,10 @@ void loop() {
   height_by_pressure();
 
   // Ausgabe der aktuellen Wert
-  //ain_print_values();
-  pressure_print_values();
-  height_print_values();
-  iot_print_values();
+  ain_print_values();
+  //pressure_print_values();
+  //height_print_values();
+  //iot_print_values();
 
   // Sendet die Werte an die IOT Plattform jeden n-ten Durchlauf
   if (counter > 100) {
@@ -218,7 +233,16 @@ void ain_print_values() {
 }
 
 /*
-####################### Pressure #######################
+####################### Digital Analog #######################
+*/
+void aout_setVoltage_mv(int voltage_mv) {
+  // Gibt die analogen Werte über die serielle Schnittstelle aus
+  int dac_value = voltage_mv/(3300.0/4096.0);
+  MCP.setValue(dac_value);
+}
+
+/*
+####################### Druck #######################
 */
 void pressure_calc_pressure() {
   // Berechnen den Druck von der Spannung des Drucksensors
@@ -288,6 +312,14 @@ String SendHTML()
   ptr +=(int)AINF_1_mv;
   ptr +=" mV</p>";
 
+  ptr +="<p>AINF_2_mv: ";
+  ptr +=(int)AINF_2_mv;
+  ptr +=" mV</p>";
+
+  ptr +="<p>AINF_3_mv: ";
+  ptr +=(int)AINF_3_mv;
+  ptr +=" mV</p>";
+
   ptr +="<p>Druck [mBar]: ";
   ptr +=(int)pressure_mbar;
   ptr +=" mBar</p>";
@@ -306,9 +338,13 @@ String SendHTML()
 
   ptr +="<form action=\"/get\">\n";
   ptr +=  "Aktuelle Hoehe [m]: <input type=\"number\" name=\"actual_height\">\n";
-  ptr +=  "<input type=\"submit\" value=\"Neue Hoehe setzen\">\n";
+  ptr +=  "<input type=\"submit\" value=\"Hoehe setzen\">\n";
   ptr +="</form><br>\n";
   
+  ptr +="<form action=\"/get\">\n";
+  ptr +=  "Analog Out [mV]: <input type=\"number\" name=\"aout\">\n";
+  ptr +=  "<input type=\"submit\" value=\"AOUT setzen\">\n";
+  ptr +="</form><br>\n";
 
   ptr +="</div>\n";
   ptr +="</body>\n";
