@@ -37,8 +37,6 @@ float H_G = 9.81;
 // WiFi Settings
 const char* ssid = "HERZOG";
 const char* password = "Herzog1234";
-//const char* ssid = "R-NET";
-//const char* password = "dagmersellen6252";
 
 // IOT Einstellungen
 const char* tb_server = "http://demo.thingsboard.io/api/v1/bG3gZepT5dmBFaoHJtNP/telemetry";
