@@ -1,10 +1,8 @@
 #include <WiFi.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebSrv.h>
+#include <AsyncFsWebServer.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <Wire.h>
-#include <MCP4725.h>
 
 // Definiert die analogen Eingänge
 int AINF_0 = A0;
@@ -45,7 +43,7 @@ const char* tb_server = "http://demo.thingsboard.io/api/v1/bG3gZepT5dmBFaoHJtNP/
 AsyncWebServer server(80);
 
 // Digital Analog Wandler
-MCP4725 MCP(0x62);
+//MCP4725 MCP(0x62);
 
 void setup() {
   // Initialisierung der seriellen Schnittstelle mit 115'222 baud
@@ -143,7 +141,7 @@ void setup() {
 
   Serial.println("HTTP server started");
 
-  MCP.begin();
+  //MCP.begin();
 }
 
 /*
@@ -236,7 +234,7 @@ void ain_print_values() {
 void aout_setVoltage_mv(int voltage_mv) {
   // Gibt die analogen Werte über die serielle Schnittstelle aus
   int dac_value = voltage_mv/(3300.0/4096.0);
-  MCP.setValue(dac_value);
+  //MCP.setValue(dac_value);
 }
 
 /*

@@ -5,13 +5,46 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [0.4.0] - 2023-12-08
+- refactor API, begin()
+- update readme.md
+- add **uint8_t getAddress()**
+- update examples
+- fix **MCP4725_voltage.ino** example
+- minor edits
+
+----
+
+## [0.3.9] - 2023-09-25
+- add Wire1 support for ESP32
+
+## [0.3.8] - 2023-09-18
+- fix #30 Voltage functions (wrapper).
+  - **void setMaxVoltage(float v)**
+  - **void getMaxVoltage(float v)**
+  - **void setVoltage(float v)**
+  - **float getVoltage()**
+- add examples
+- update readme.md
+
+## [0.3.7] - 2023-08-25
+- fix #27 - support for multiple MCP4725
+  - add two examples.
+- update readme.md
+- minor edits
+
+## [0.3.6] - 2023-07-19
+- fix #25 - buffer overflow in examples
+- update keywords.txt
+- moved code to MCP4725.cpp
+- minor edits
+
 ## [0.3.5] - 2023-01-17
 - update GitHub actions
 - update license
 - fix #23 add note about RP2040
 - add **MCP4725_MIDPOINT** constant
 - minor edits
-
 
 ## [0.3.4] - 2022-10-17
 - Add RP2040 support (kudos to intubun)

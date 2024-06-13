@@ -2,22 +2,23 @@
 //    FILE: smooth2Value.ino
 //  AUTHOR: Rob Tillaart
 // PURPOSE: test mcp4725 lib
-//    DATE: 2013-12-01
 //     URL: https://github.com/RobTillaart/MCP4725
 
 
 #include "Wire.h"
 #include "MCP4725.h"
 
-MCP4725 MCP(0x62);  // 0x62 or 0x63
+MCP4725 MCP(0x62);
 
 
 void setup()
 {
   Serial.begin(115200);
-
-  Serial.print("MCP4725 test program: ");
+  Serial.println(__FILE__);
+  Serial.print("MCP4725_VERSION: ");
   Serial.println(MCP4725_VERSION);
+
+  Wire.begin();
 
   MCP.begin();
 
@@ -57,7 +58,7 @@ void setup()
 
 void loop()
 {
-  // different gradients
+  //  different gradients
   smooth2Value(4095, 4096);
   smooth2Value(0, 4096);
   smooth2Value(4095, 2048);
@@ -81,10 +82,10 @@ int smooth2Value(uint16_t value, uint16_t steps)
       MCP.setValue( round(startValue + i * delta) );
     }
   }
-  // get the end value right
+  //  get the end value right
   return MCP.setValue(value);
 }
 
 
-// -- END OF FILE --
+//  -- END OF FILE --
 

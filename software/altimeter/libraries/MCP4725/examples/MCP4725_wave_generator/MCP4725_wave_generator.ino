@@ -2,7 +2,6 @@
 //    FILE: MCP4725_wave_generator.ino
 //  AUTHOR: Rob Tillaart
 // PURPOSE: demo function generators
-//    DATE: 2021-01-07
 //     URL: https://github.com/RobTillaart/FunctionGenerator
 //
 //  depending on the platform, the range of "smooth" sinus is limited.
@@ -17,39 +16,44 @@
 #include "MCP4725.h"
 #include "Wire.h"
 
-uint16_t     freq = 100;
-uint32_t   period = 0;
-uint32_t   halvePeriod = 0;
+uint16_t   freq = 100;
+uint32_t period = 0;
+uint32_t halvePeriod = 0;
 
-// q = square
-// s = sinus
-// w = sawtooth
-// t = stair
-// r = random
+
+//  q = square       z = zero
+//  s = sinus        m = mid
+//  w = sawtooth     h = high
+//  t = stair
+//  r = random
 char mode = 'q';
+
 
 MCP4725 MCP(0x63);
 uint16_t count;
 uint32_t lastTime = 0;
 
-// LOOKUP TABLE SINE
-uint16_t sine[360];
+
+//  LOOKUP TABLE SINE
+uint16_t sine[361];
 
 
 void setup()
 {
   Serial.begin(115200);
+  Serial.println(__FILE__);
+  Serial.print("MCP4725_VERSION: ");
+  Serial.println(MCP4725_VERSION);
 
-  // fill table
+  Wire.begin();
+  //  Wire.setClock(3400000);
+  
+  //  fill table
   for (int i = 0; i < 361; i++)
   {
     sine[i] = 2047 + round(2047 * sin(i * PI / 180));
   }
 
-  Wire.begin();
-  // ESP32
-  // MCP.begin(27, 26);
-  // Wire.setClock(3400000);
   MCP.begin();
   Wire.setClock(800000);
 
@@ -72,7 +76,8 @@ void setup()
     if (now - lastTime > 100000)
     {
       lastTime = now;
-      // Serial.println(count); // show # updates per 0.1 second
+      //  show # updates per 0.1 second
+      //  Serial.println(count);
       count = 0;
       if (Serial.available())
       {
@@ -144,23 +149,23 @@ void setup()
       case 'r':
         MCP.setValue(random(4096));
         break;
-      case 'z':  // zero
+      case 'z':  //  zero
         MCP.setValue(0);
         break;
-      case 'h':  // high
+      case 'h':  //  high
         MCP.setValue(4095);
         break;
-      case 'm':  // mid
+      case 'm':  //  mid
         MCP.setValue(2047);
         break;
       default:
       case 's':
-        // reference
-        // float f = ((PI * 2) * t)/period;
-        // MCP.setValue(2047 + 2047 * sin(f));
+        //  reference
+        //  float f = ((PI * 2) * t)/period;
+        //  MCP.setValue(2047 + 2047 * sin(f));
         //
         int idx = (360 * t) / period;
-        MCP.setValue(sine[idx]);  // lookuptable
+        MCP.setValue(sine[idx]);   //  fetch from lookup table
         break;
     }
   }
@@ -172,5 +177,5 @@ void loop()
 }
 
 
-// -- END OF FILE --
+//  -- END OF FILE --
 

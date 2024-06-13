@@ -3,16 +3,15 @@
 //    FILE: MCP4725.h
 //  AUTHOR: Rob Tillaart
 // PURPOSE: Arduino library for 12 bit I2C DAC - MCP4725
-// VERSION: 0.3.5
+// VERSION: 0.4.0
 //     URL: https://github.com/RobTillaart/MCP4725
-//
 
 
 #include "Wire.h"
 #include "Arduino.h"
 
 
-#define MCP4725_VERSION         (F("0.3.5"))
+#define MCP4725_VERSION         (F("0.4.0"))
 
 
 //  CONSTANTS
@@ -38,21 +37,12 @@
 class MCP4725
 {
 public:
+  //  address = 0x60..0x67
   explicit MCP4725(const uint8_t deviceAddress, TwoWire *wire = &Wire);
-
-#if defined(ESP8266) || defined(ESP32)
-  bool     begin(const uint8_t dataPin, const uint8_t clockPin);
-#endif
-
-#if defined (ARDUINO_ARCH_RP2040)
-
-  bool     begin(int sda, int scl);
-
-#endif
 
   bool     begin();
   bool     isConnected();
-
+  uint8_t  getAddress();
 
   //  uses writeFastMode
   int      setValue(const uint16_t value = 0);
@@ -60,16 +50,30 @@ public:
   uint16_t getValue();
 
 
-  //  0..100.0% - no input check.
+  //  0..100.0% - input checked.
+  //  will set the closest integer value in range 0..4095
   int      setPercentage(float percentage = 0);
-  float    getPercentage() { return getValue() * (100.0 / MCP4725_MAXVALUE); };
+  //  due to rounding the returned value can differ slightly.
+  float    getPercentage();
+
+  //  typical and default value = 5.0 V
+  void     setMaxVoltage(float v = 5.0);
+  float    getMaxVoltage();
+  //  will set 0..5V to the closest integer value in range 0..4095
+  int      setVoltage(float v);
+  // returns (approximation of) the set voltage. Assumes linear mapping.
+  float    getVoltage();
 
 
+  //  unfortunately it is not possible to write a different value
+  //  to the DAC and EEPROM simultaneously or write EEPROM only.
   int      writeDAC(const uint16_t value, const bool EEPROM = false);
+  //  ready checks if the last write to EEPROM has been written.
+  //  until ready all writes to the MCP4725 are ignored!
   bool     ready();
-  uint32_t getLastWriteEEPROM()  { return _lastWriteEEPROM; };
   uint16_t readDAC();
   uint16_t readEEPROM();
+  uint32_t getLastWriteEEPROM();  //  returns timestamp
 
 
   //  experimental
@@ -91,6 +95,8 @@ private:
   uint8_t  _readRegister(uint8_t* buffer, const uint8_t length);
 
   int      _generalCall(const uint8_t gc);
+
+  float    _maxVoltage;
 
   TwoWire*  _wire;
 };
